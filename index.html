@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Alchemy Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:    #c9a84c;
+      --gold-lt: #e8c97a;
+      --bg:      #0d0e14;
+      --surface: #13151f;
+      --card:    #1a1d2b;
+      --border:  #2a2d3e;
+      --text:    #d4d4d8;
+      --muted:   #6b7280;
+      --accent:  #7c6af7;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, #1e1540 0%, var(--bg) 70%);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '☿';
+      position: absolute;
+      font-size: 320px;
+      opacity: 0.03;
+      top: -60px; left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      user-select: none;
+    }
+    .hero-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero p {
+      max-width: 580px;
+      margin: 0 auto;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .divider {
+      width: 60px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 32px auto;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 760px; margin: 0 auto; padding: 48px 24px; }
+
+    /* ── Section headers ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .section-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 4px 10px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .section-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+
+    /* ── Question cards ── */
+    .question-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .question-card:hover { border-color: #3a3d50; }
+    .question-card.answered { border-color: #2a3050; }
+    .q-num {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .q-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #e4e4e7;
+      margin-bottom: 18px;
+    }
+
+    /* ── Radio pill buttons ── */
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pill-group input[type="radio"] { display: none; }
+    .pill-group label {
+      cursor: pointer;
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      background: var(--surface);
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .pill-group input[type="radio"]:checked + label {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #0d0e14;
+      font-weight: 500;
+    }
+    .pill-group label:hover { border-color: var(--gold); color: var(--gold-lt); }
+
+    /* ── Mind images ── */
+    .mind-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .mind-option { position: relative; cursor: pointer; }
+    .mind-option input[type="radio"] { display: none; }
+    .mind-option img {
+      width: 88px;
+      height: 88px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      display: block;
+      object-fit: cover;
+      transition: all 0.2s;
+      filter: brightness(0.8) saturate(0.7);
+    }
+    .mind-option input[type="radio"]:checked ~ img,
+    .mind-option img.selected {
+      border-color: var(--gold);
+      filter: brightness(1) saturate(1);
+      box-shadow: 0 0 16px rgba(201,168,76,0.35);
+    }
+    .mind-option img:hover { border-color: var(--gold-lt); filter: brightness(0.95) saturate(0.9); }
+
+    /* ── Color tiles ── */
+    .color-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .color-option { position: relative; }
+    .color-option input[type="radio"] { display: none; }
+    .color-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      transition: all 0.15s;
+      min-width: 64px;
+    }
+    .color-swatch {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .color-name { font-size: 11px; color: var(--muted); }
+    .color-option input[type="radio"]:checked + label {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.08);
+    }
+    .color-option label:hover { border-color: #3a3d50; }
+    .color-option input[type="radio"]:checked + label .color-name { color: var(--gold); }
+
+    /* ── Submit ── */
+    .submit-area { text-align: center; margin: 48px 0 24px; }
+    .btn-calculate {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #b8922a, var(--gold), #c9a84c);
+      color: #0d0e14;
+      border: none;
+      padding: 16px 48px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 4px 24px rgba(201,168,76,0.25);
+    }
+    .btn-calculate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(201,168,76,0.4);
+    }
+    .btn-calculate:active { transform: translateY(0); }
+    .warn {
+      color: #f87171;
+      font-size: 13px;
+      margin-top: 16px;
+      display: none;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    /* ── Results ── */
+    .results {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 40px;
+      margin-top: 48px;
+      box-shadow: 0 0 60px rgba(201,168,76,0.1);
+    }
+    .results-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .results-header .section-badge { display: inline-block; margin-bottom: 12px; }
+    .results-header h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 24px;
+      color: #fff;
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin: 32px 0;
+    }
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .score-card.total {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.06);
+    }
+    .score-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-family: 'Cinzel', serif;
+    }
+    .score-value {
+      font-family: 'Cinzel', serif;
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--gold);
+    }
+    .score-card.total .score-value { font-size: 44px; }
+    .result-cta {
+      text-align: center;
+      margin: 24px 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .result-link-btn {
+      display: inline-block;
+      margin-top: 12px;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 12px 28px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .result-link-btn:hover {
+      background: var(--gold);
+      color: #0d0e14;
+    }
+    .score-links-all {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .score-links-all a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      transition: all 0.15s;
+    }
+    .score-links-all a:hover { color: var(--gold); border-color: var(--gold); }
+    .score-links-all a.active { color: var(--gold); border-color: var(--gold); background: rgba(201,168,76,0.08); }
+    .results-note {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 24px;
+      line-height: 1.7;
+      font-style: italic;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <p class="hero-eyebrow">Inner Transformation Assessment</p>
+  <h1>Personal <span>Alchemy</span> Quiz</h1>
+  <div class="divider"></div>
+  <p>Discover your current level of personal transformation and find the alchemical operations most suited to your inner work. Answer truthfully — the quiz can be retaken to track your growth.</p>
+</div>
+
+<div class="container">
+
+  <!-- ══ SECTION 1: LUNAR ══ -->
+  <div class="section-header">
+    <span class="section-badge">Section I</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="section-title">Lunar Test</div>
+  <div class="section-subtitle">Intuitive dimension — trust your instincts</div>
+
+  <!-- L1: Mind Video -->
+  <div class="question-card" id="card-mstate">
+    <div class="q-num">LUNAR · 01</div>
+    <div class="q-text">If you could make a video of your mind in the last few weeks, which of the following would it look like?</div>
+    <div class="mind-grid">
+      <!-- values: mstate0=5, mstate1=6, mstate2=7, mstate3=8, mstate4=3, mstate5=4, mstate6=2 -->
+      <div class="mind-option">
+        <input type="radio" name="mstate" id="mstate0" value="5" onchange="onMstate(this)">
+        <label for="mstate0"><img src="https://www.alchemylab.com/wp-content/uploads/2017/03/lightbox04.gif" alt="Option 1"></label>
+      </div>
+      <div class="mind-option">
+        <input type="radio" name="mstate" id="mstate1" value="6" onchange="onMstate(this)">
+        <label for="mstate1"><img src="https://www.alchemylab.com/wp-content/uploads/2017/03/lightbox02.gif" alt="Option 2"></label>
+      </div>
+      <div class="mind-option">
+        <input type="radio" name="mstate" id="mstate2" value="7" onchange="onMstate(this)">
+        <label for="mstate2"><img src="https://www.alchemylab.com/wp-content/uploads/2017/03/lightbox7.gif"  alt="Option 3"></label>
+      </div>
+      <div class="mind-option">
+        <input type="radio" name="mstate" id="mstate3" value="8" onchange="onMstate(this)">
+        <label for="mstate3"><img src="https://www.alchemylab.com/wp-content/uploads/2017/03/lightbox03.gif" alt="Option 4"></label>
+      </div>
+      <div class="mind-option">
+        <input type="radio" name="mstate" id="mstate4" value="3" onchange="onMstate(this)">
+        <label for="mstate4"><img src="https://www.alchemylab.com/wp-content/uploads/2017/03/lightbox01.gif" alt="Option 5"></label>
+      </div>
+      <div class="mind-option">
+        <input type="radio" name="mstate" id="mstate5" value="4" onchange="onMstate(this)">
+        <label for="mstate5"><img src="https://www.alchemylab.com/wp-content/uploads/2017/03/lightbox05.gif" alt="Option 6"></label>
+      </div>
+      <div class="mind-option">
+        <input type="radio" name="mstate" id="mstate6" value="2" onchange="onMstate(this)">
+        <label for="mstate6"><img src="https://www.alchemylab.com/wp-content/uploads/2017/03/lightbox06.gif" alt="Option 7"></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- L2: Energy -->
+  <div class="question-card" id="card-energy">
+    <div class="q-num">LUNAR · 02</div>
+    <div class="q-text">In the last few months, how would you rate your overall mood and energy level?</div>
+    <div class="pill-group">
+      <input type="radio" name="energy" id="energy0" value="0" onchange="markAnswered('card-energy')"><label for="energy0">The Dumps</label>
+      <input type="radio" name="energy" id="energy1" value="1" onchange="markAnswered('card-energy')"><label for="energy1">Low</label>
+      <input type="radio" name="energy" id="energy2" value="2" onchange="markAnswered('card-energy')"><label for="energy2">Fair</label>
+      <input type="radio" name="energy" id="energy3" value="3" onchange="markAnswered('card-energy')"><label for="energy3">High</label>
+      <input type="radio" name="energy" id="energy4" value="4" onchange="markAnswered('card-energy')"><label for="energy4">Exuberant</label>
+    </div>
+  </div>
+
+  <!-- L3: Color -->
+  <div class="question-card" id="card-color">
+    <div class="q-num">LUNAR · 03</div>
+    <div class="q-text">Currently, what color attracts you the most?</div>
+    <div class="color-grid">
+      <div class="color-option"><input type="radio" name="color" id="cRed"    value="1" onchange="markAnswered('card-color')"><label for="cRed"><span class="color-swatch" style="background:#ef4444"></span><span class="color-name">Red</span></label></div>
+      <div class="color-option"><input type="radio" name="color" id="cOrange" value="2" onchange="markAnswered('card-color')"><label for="cOrange"><span class="color-swatch" style="background:#f97316"></span><span class="color-name">Orange</span></label></div>
+      <div class="color-option"><input type="radio" name="color" id="cYellow" value="3" onchange="markAnswered('card-color')"><label for="cYellow"><span class="color-swatch" style="background:#eab308"></span><span class="color-name">Yellow</span></label></div>
+      <div class="color-option"><input type="radio" name="color" id="cGreen"  value="4" onchange="markAnswered('card-color')"><label for="cGreen"><span class="color-swatch" style="background:#22c55e"></span><span class="color-name">Green</span></label></div>
+      <div class="color-option"><input type="radio" name="color" id="cBlue"   value="5" onchange="markAnswered('card-color')"><label for="cBlue"><span class="color-swatch" style="background:#3b82f6"></span><span class="color-name">Blue</span></label></div>
+      <div class="color-option"><input type="radio" name="color" id="cIndigo" value="6" onchange="markAnswered('card-color')"><label for="cIndigo"><span class="color-swatch" style="background:#6366f1"></span><span class="color-name">Indigo</span></label></div>
+      <div class="color-option"><input type="radio" name="color" id="cViolet" value="7" onchange="markAnswered('card-color')"><label for="cViolet"><span class="color-swatch" style="background:#a855f7"></span><span class="color-name">Violet</span></label></div>
+      <div class="color-option"><input type="radio" name="color" id="cBlack"  value="0" onchange="markAnswered('card-color')"><label for="cBlack"><span class="color-swatch" style="background:#18181b;border-color:rgba(255,255,255,0.2)"></span><span class="color-name">Black</span></label></div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 2: SOLAR ══ -->
+  <div class="section-header" style="margin-top:56px">
+    <span class="section-badge">Section II</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="section-title">Solar Test</div>
+  <div class="section-subtitle">Intellectual dimension — reflect honestly on each statement</div>
+
+  <div id="solar-questions"></div>
+
+  <!-- Submit -->
+  <div class="submit-area">
+    <button class="btn-calculate" onclick="calcScore()">Reveal My Alchemy</button>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div class="results-header">
+      <span class="section-badge">Section III</span>
+      <h2>Your Quiz Results</h2>
+    </div>
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="score-label">Lunar</div>
+        <div class="score-value" id="tbLunar">—</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">Solar</div>
+        <div class="score-value" id="tbSolar">—</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">Hermetic</div>
+        <div class="score-value" id="tbHermetic">—</div>
+      </div>
+      <div class="score-card total">
+        <div class="score-label">Total Score</div>
+        <div class="score-value" id="tbTotal">—</div>
+      </div>
+    </div>
+    <div class="result-cta">
+      <p>Your score corresponds to this alchemical stage:</p>
+      <a id="result-main-link" href="#" target="_blank" class="result-link-btn">View Your Interpretation →</a>
+    </div>
+    <div class="score-links-all">
+      <a href="https://www.alchemylab.com/quiz1.htm" target="_blank" data-min="0"  data-max="14">0–14</a>
+      <a href="https://www.alchemylab.com/quiz2.htm" target="_blank" data-min="15" data-max="30">15–30</a>
+      <a href="https://www.alchemylab.com/quiz3.htm" target="_blank" data-min="31" data-max="45">31–45</a>
+      <a href="https://www.alchemylab.com/quiz4.htm" target="_blank" data-min="46" data-max="60">46–60</a>
+      <a href="https://www.alchemylab.com/quiz5.htm" target="_blank" data-min="61" data-max="75">61–75</a>
+      <a href="https://www.alchemylab.com/quiz6.htm" target="_blank" data-min="76" data-max="90">76–90</a>
+      <a href="https://www.alchemylab.com/quiz7.htm" target="_blank" data-min="91" data-max="115">91–115</a>
+    </div>
+    <p class="results-note">There is no true litmus test for the metals within us, and the operations of alchemy continue throughout our lives in a rising spiral of transformation. These results are intended only as a general guide to the alchemical parameters of your current situation.</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const solarQuestions = [
+  { name:"Q1",  text:"While I'm driving, if someone cuts me off or drives too slow, I curse them or try to get even." },
+  { name:"Q2",  text:"The harder I try to accomplish something, the more obstacles get in my way." },
+  { name:"Q3",  text:"During my free time, I have a hard time finding something to do." },
+  { name:"Q4",  text:"When I first meet people, I judge them by how good looking or well dressed they are." },
+  { name:"Q5",  text:"My dreams are about things that happened to me during the day." },
+  { name:"Q6",  text:"In conversations, I think about other things or change the subject to something that interests me." },
+  { name:"Q7",  text:"I have a hard time throwing stuff away and put up with a lot of clutter." },
+  { name:"Q8",  text:"I like to watch TV infomercials and prefer that salesmen assist me when I go shopping." },
+  { name:"Q9",  text:"I enjoy arguing with other people about politics, race, or religion." },
+  { name:"Q10", text:"I can't help getting my feelings hurt when people tease me or make insensitive comments." },
+  { name:"Q11", text:"I flirt without getting involved or flip through magazines looking for pictures that turn me on." },
+  { name:"Q12", text:"When I'm depressed, I like to be alone and resent it when people try to cheer me up." },
+  { name:"Q13", text:"I have no problem expressing myself in front of strangers or large groups of people." },
+  { name:"Q14", text:"I keep a journal of inspirational thoughts or carry a list of insights in my purse or wallet." },
+  { name:"Q15", text:"I spend my time meditating or just sitting in the dark listening to music." },
+  { name:"Q16", text:"I am very good in an emergency, but fall apart afterwards." },
+  { name:"Q17", text:"I get great joy from just being home alone and organizing my room." },
+  { name:"Q18", text:"I get so involved in a book or movie that I unintentionally ignore people when they talk to me." },
+  { name:"Q19", text:"If I really want something but don't try too hard to get it, things have a way of falling into place." },
+  { name:"Q20", text:"I feel there is a higher presence inside me, though I don't like to talk about it." },
+  { name:"Q21", text:"I experience strange or distorted bodily sensations when I am falling off to sleep or waking up." },
+];
+
+const scaleOptions = [
+  { suffix:"A", value:"0", label:"Never True" },
+  { suffix:"B", value:"1", label:"Sometimes True" },
+  { suffix:"C", value:"2", label:"Often True" },
+  { suffix:"D", value:"3", label:"Usually True" },
+  { suffix:"E", value:"4", label:"Always True" },
+];
+
+// Q22 values: Energy=3, Matter=2, Light=4, God=5, Soul=7, Love=6, Hate=1
+const q22Options = [
+  { id:"Q22A", value:"3", label:"Energy" },
+  { id:"Q22B", value:"2", label:"Matter" },
+  { id:"Q22C", value:"4", label:"Light" },
+  { id:"Q22D", value:"5", label:"God" },
+  { id:"Q22E", value:"7", label:"Soul" },
+  { id:"Q22F", value:"6", label:"Love" },
+  { id:"Q22G", value:"1", label:"Hate" },
+];
+
+// Build Solar questions
+const container = document.getElementById("solar-questions");
+solarQuestions.forEach((q, i) => {
+  const num = i + 1;
+  const cardId = `card-${q.name}`;
+  const div = document.createElement("div");
+  div.className = "question-card";
+  div.id = cardId;
+  let html = `<div class="q-num">SOLAR · ${String(num).padStart(2,'0')}</div>`;
+  html += `<div class="q-text">${q.text}</div>`;
+  html += `<div class="pill-group">`;
+  scaleOptions.forEach(opt => {
+    const id = `${q.name}${opt.suffix}`;
+    html += `<input type="radio" name="${q.name}" id="${id}" value="${opt.value}" onchange="markAnswered('${cardId}')">`;
+    html += `<label for="${id}">${opt.label}</label>`;
+  });
+  html += `</div>`;
+  div.innerHTML = html;
+  container.appendChild(div);
+});
+
+// Q22
+const q22div = document.createElement("div");
+q22div.className = "question-card";
+q22div.id = "card-Q22";
+let q22html = `<div class="q-num">HERMETIC · 22</div>`;
+q22html += `<div class="q-text">Read the <a href="https://www.alchemylab.com/riddle.htm" target="_blank" style="color:var(--gold)">Ancient Riddle</a> and make the selection that comes closest to what you believe the answer might be.</div>`;
+q22html += `<div class="pill-group">`;
+q22Options.forEach(opt => {
+  q22html += `<input type="radio" name="Q22" id="${opt.id}" value="${opt.value}" onchange="markAnswered('card-Q22')">`;
+  q22html += `<label for="${opt.id}">${opt.label}</label>`;
+});
+q22html += `</div>`;
+q22div.innerHTML = q22html;
+container.appendChild(q22div);
+
+// Mind image — use label click (CSS sibling handles the style via :checked)
+function onMstate(input) {
+  markAnswered('card-mstate');
+}
+
+function markAnswered(cardId) {
+  const card = document.getElementById(cardId);
+  if (card) card.classList.add("answered");
+}
+
+function getRadioValue(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? parseInt(el.value) : null;
+}
+
+function calcScore() {
+  const warn = document.getElementById("warn");
+  warn.style.display = "none";
+
+  const mstate = getRadioValue("mstate");
+  const energy = getRadioValue("energy");
+  const color  = getRadioValue("color");
+  const missing = [];
+
+  if (mstate === null) missing.push("Lunar Q1 (Mind Video)");
+  if (energy === null) missing.push("Lunar Q2 (Mood/Energy)");
+  if (color  === null) missing.push("Lunar Q3 (Color)");
+
+  const solarVals = [];
+  for (let i = 1; i <= 21; i++) {
+    const v = getRadioValue("Q" + i);
+    if (v === null) missing.push(`Solar Q${i}`);
+    else solarVals.push(v);
+  }
+
+  const hermetic = getRadioValue("Q22");
+  if (hermetic === null) missing.push("Q22 (Ancient Riddle)");
+
+  if (missing.length > 0) {
+    const shown = missing.slice(0, 3).join(", ");
+    const extra = missing.length > 3 ? ` and ${missing.length - 3} more` : "";
+    warn.textContent = `Please answer all questions first. Missing: ${shown}${extra}.`;
+    warn.style.display = "block";
+    return;
+  }
+
+  const lunarScore    = mstate + energy + color;
+  const solarScore    = solarVals.reduce((a, b) => a + b, 0);
+  const hermeticScore = hermetic;
+  const totalScore    = lunarScore + solarScore + hermeticScore;
+
+  document.getElementById("tbLunar").textContent    = lunarScore;
+  document.getElementById("tbSolar").textContent    = solarScore;
+  document.getElementById("tbHermetic").textContent = hermeticScore;
+  document.getElementById("tbTotal").textContent    = totalScore;
+
+  // Score range links
+  const ranges = [
+    { min:0,  max:14,  url:"https://www.alchemylab.com/quiz1.htm" },
+    { min:15, max:30,  url:"https://www.alchemylab.com/quiz2.htm" },
+    { min:31, max:45,  url:"https://www.alchemylab.com/quiz3.htm" },
+    { min:46, max:60,  url:"https://www.alchemylab.com/quiz4.htm" },
+    { min:61, max:75,  url:"https://www.alchemylab.com/quiz5.htm" },
+    { min:76, max:90,  url:"https://www.alchemylab.com/quiz6.htm" },
+    { min:91, max:115, url:"https://www.alchemylab.com/quiz7.htm" },
+  ];
+  const match = ranges.find(r => totalScore >= r.min && totalScore <= r.max) || ranges[ranges.length-1];
+
+  document.getElementById("result-main-link").href = match.url;
+
+  // Highlight active range link
+  document.querySelectorAll(".score-links-all a").forEach(a => {
+    const min = parseInt(a.dataset.min), max = parseInt(a.dataset.max);
+    a.classList.toggle("active", totalScore >= min && totalScore <= max);
+  });
+
+  const resultsEl = document.getElementById("results");
+  resultsEl.style.display = "block";
+  resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+</script>
+</body>
+</html>
